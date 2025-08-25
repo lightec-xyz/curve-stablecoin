@@ -38,13 +38,14 @@ event SetAdmin:
 
 POOL: public(immutable(Pool))
 
-SUPPLY_THESHOLD: constant(uint256) = 9600000000000000000000
-ZKBTC_PRICE_PRECISION_BTC: constant(uint256) = 10**8
+SUPPLY_THESHOLD: constant(uint256) = 9600 * 10**18 # about 6.5M crvUSD as of Aug 2025
 
-CHAINLINK_AGGREGATOR_BTC: immutable(ChainlinkAggregator)
+ZKBTC_PRICE_PRECISION_BTC: constant(uint256) = 10**8
+BOUND_SIZE: constant(uint256) = 1500000 # 1.5%, it is price bound for zkBTC so the precision is 10**8
+
+CHAINLINK_AGGREGATOR_BTC: public(immutable(ChainlinkAggregator))
 CHAINLINK_PRICE_PRECISION_BTC: immutable(uint256)
 CHAINLINK_STALE_THRESHOLD: constant(uint256) = 86400
-BOUND_SIZE: constant(uint256) = 1500000
 
 use_chainlink: public(bool)
 admin: public(address)
