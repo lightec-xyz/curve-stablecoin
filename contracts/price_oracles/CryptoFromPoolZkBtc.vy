@@ -40,8 +40,7 @@ POOL: public(immutable(Pool))
 
 SUPPLY_THESHOLD: constant(uint256) = 9600 * 10**18 # about 6.5M crvUSD as of Aug 2025
 
-ZKBTC_PRICE_PRECISION_BTC: constant(uint256) = 10**8
-BOUND_SIZE: constant(uint256) = 1500000 # 1.5%, it is price bound for zkBTC so the precision is 10**8
+BOUND_SIZE: constant(uint256) = 15 * 10**15 # 1.5%
 
 CHAINLINK_AGGREGATOR_BTC: public(immutable(ChainlinkAggregator))
 CHAINLINK_PRICE_PRECISION_BTC: immutable(uint256)
@@ -66,7 +65,7 @@ def __init__(
 @internal
 @view
 def _raw_price() -> uint256:
-    p_collateral: uint256 = ZKBTC_PRICE_PRECISION_BTC
+    p_collateral: uint256 = 10**18 # price oracle must return price in 10**18
     p_borrowed: uint256 = staticcall POOL.price_oracle()
     price: uint256 = p_collateral * 10**18 // p_borrowed # price oracle returns in 10**18
 
@@ -74,9 +73,9 @@ def _raw_price() -> uint256:
     if self.use_chainlink or staticcall POOL.totalSupply() < SUPPLY_THESHOLD:
         chainlink_lrd: ChainlinkAnswer = staticcall CHAINLINK_AGGREGATOR_BTC.latestRoundData()
         if block.timestamp - min(chainlink_lrd.updated_at, block.timestamp) <= CHAINLINK_STALE_THRESHOLD:
-            chainlink_p: uint256 = convert(chainlink_lrd.answer, uint256) * ZKBTC_PRICE_PRECISION_BTC // CHAINLINK_PRICE_PRECISION_BTC
-            lower: uint256 = chainlink_p * (ZKBTC_PRICE_PRECISION_BTC - BOUND_SIZE) // ZKBTC_PRICE_PRECISION_BTC
-            upper: uint256 = chainlink_p * (ZKBTC_PRICE_PRECISION_BTC + BOUND_SIZE) // ZKBTC_PRICE_PRECISION_BTC
+            chainlink_p: uint256 = convert(chainlink_lrd.answer, uint256) * 10**18 // CHAINLINK_PRICE_PRECISION_BTC
+            lower: uint256 = chainlink_p * (10**18 - BOUND_SIZE) // 10**18
+            upper: uint256 = chainlink_p * (10**18 + BOUND_SIZE) // 10**18
             price = min(max(price, lower), upper)
 
     return price
